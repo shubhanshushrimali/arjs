@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web AR with Hand Gesture Recognition</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        #screenshot-button { display: none; position: absolute; top: 20px; left: 20px; }
+    </style>
+</head>
+<body>
+    <button id="screenshot-button">Take Screenshot</button>
+    <a-scene embedded arjs>
+        <a-entity id="ar-object" gltf-model="path-to-your-3d-model.glb" scale="0.1 0.1 0.1"></a-entity>
+    </a-scene>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script type="module" src="script.js"></script>
+</body>
+</html>
