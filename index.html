@@ -1,21 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/ar.js@2.2.1"></script>
-    <title>WebAR Example</title>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@2.4.0/dist/model-viewer.min.js"></script>
 </head>
 <body>
-    <a-scene embedded arjs="sourceType: webcam; trackingMethod: best;">
-        <a-marker preset="hiro">
-            <a-entity
-                gltf-model="pk1.gltf"
-                scale="0.1 0.1 0.1"
-            ></a-entity>
-        </a-marker>
-        <a-entity camera></a-entity>
-    </a-scene>
+  <model-viewer
+    src="pk1.gltf"
+    alt="A 3D model"
+    auto-rotate
+    camera-controls
+  ></model-viewer>
 </body>
 </html>
