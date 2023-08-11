@@ -1,10 +1,16 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.module.js';
-
+const placeButton = document.getElementById('place-button');
+const screenshotButton = document.getElementById('screenshot-button');
 let scene, camera, renderer, cube;
 
-init();
+placeButton.addEventListener('click', startAR);
 
-function init() {
+async function startAR() {
+    placeButton.style.display = 'none'; // Hide the "Place 3D Model" button
+    screenshotButton.style.display = 'block'; // Show the "Take Screenshot" button
+
+    const session = await navigator.xr.requestSession('immersive-ar');
+    const referenceSpace = await session.requestReferenceSpace('local-floor');
+
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -18,26 +24,46 @@ function init() {
 
     camera.position.z = 5;
 
-    // Screenshot Button
-    const screenshotButton = document.getElementById('screenshot-button');
+    session.addEventListener('end', endAR);
+    session.updateRenderState({ baseLayer: new XRWebGLLayer(session, renderer) });
+    session.requestAnimationFrame(onARFrame);
+
+    async function onARFrame(time, frame) {
+        const pose = frame.getViewerPose(referenceSpace);
+
+        if (pose) {
+            const view = pose.views[0];
+            const viewport = session.renderState.baseLayer.getViewport(view);
+            camera.matrix.fromArray(view.transform.matrix);
+            camera.projectionMatrix.fromArray(view.projectionMatrix);
+            camera.updateMatrixWorld(true);
+
+            cube.position.set(0, 0, -1).applyMatrix4(camera.matrixWorld);
+            cube.rotation.setFromRotationMatrix(camera.matrixWorld);
+        }
+
+        renderer.setSize(viewport.width, viewport.height);
+        renderer.setViewport(viewport.x, viewport.y, viewport.width, viewport.height);
+
+        renderer.render(scene, camera);
+        session.requestAnimationFrame(onARFrame);
+    }
+
     screenshotButton.addEventListener('click', takeScreenshot);
 
-    animate();
+    function takeScreenshot() {
+        const screenshotDataUrl = renderer.domElement.toDataURL('image/png');
+        const a = document.createElement('a');
+        a.href = screenshotDataUrl;
+        a.download = 'screenshot.png';
+        a.click();
+    }
+
+    function endAR() {
+        session.removeEventListener('end', endAR);
+        renderer.dispose();
+        placeButton.style.display = 'block';
+        screenshotButton.style.display = 'none';
+    }
 }
-
-function animate() {
-    requestAnimationFrame(animate);
-
-    cube.rotation.x += 0.01;
-    cube.rotation.y += 0.01;
-
-    renderer.render(scene, camera);
-}
-
-function takeScreenshot() {
-    const screenshotDataUrl = renderer.domElement.toDataURL('image/png');
-    
-    // Create a new tab to display the screenshot
-    const screenshotWindow = window.open();
-    screenshotWindow.document.write('<img src="' + screenshotDataUrl + '" />');
 }
